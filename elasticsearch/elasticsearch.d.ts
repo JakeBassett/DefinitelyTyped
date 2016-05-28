@@ -6,7 +6,7 @@
 declare module Elasticsearch {
 
     export class Client {
-        constructor(params : any);
+        constructor(params : ClientParams);
 
         indices : Indices;
 
@@ -20,19 +20,19 @@ declare module Elasticsearch {
         create(params : CreateParams, callback : (error : any, response : CreateResponse) => void) : void;
         delete(params : DeleteParams) : Promise<DeleteResponse>;
         delete(params : DeleteParams, callback : (error : any, response : DeleteResponse) => void) : void;
-        get(params : GetParams, callback : (error : any, response : any) => void) : void;
         get<T>(params : GetParams) : Promise<GetResponse<T>>;
+        get(params : GetParams, callback : (error : any, response : any) => void) : void;
         update(params : UpdateParams) : Promise<UpdateResponse>;
         update(params : UpdateParams, callback : (error : any, response : UpdateResponse) => void) : void;
 
-        mget(params : MGetParams, callback : (error : any, response : any) => void) : void;
         mget<T>(params : MGetParams) : Promise<GetResponse<T>>;
-        msearch(params : MSearchParams, callback : (error : any, response : any) => void) : void;
+        mget(params : MGetParams, callback : (error : any, response : any) => void) : void;
         msearch<T>(params : MSearchParams) : Promise<GetResponse<T>>;
+        msearch(params : MSearchParams, callback : (error : any, response : any) => void) : void;
 
         scroll(params : ScrollParams) : Promise<any>;
         scroll(params : ScrollParams, callback : (error : any, response : any) => void) : void;
-        search(params : SearchParams) : Promise<any>;
+        search<T>(params : SearchParams) : Promise<SearchResponse<T>>;
         search(params : SearchParams, callback : (error : any, response : any) => void) : void;
         suggest(params : SuggestParams) : Promise<any>;
         suggest(params : SuggestParams, callback : (error : any, response : any) => void) : void;
@@ -42,25 +42,29 @@ declare module Elasticsearch {
     }
 
     export class Indices {
-        delete(params : IndicesDeleteParams, callback : (error : any, response : any, status : any) => void) : void;
         delete(params : IndicesDeleteParams) : Promise<any>;
-        create(params : IndicesCreateParams, callback : (error : any, response : any, status : any) => void) : void;
+        delete(params : IndicesDeleteParams, callback : (error : any, response : any, status : any) => void) : void;
         create(params : IndicesCreateParams) : Promise<any>;
-        exists(params : IndicesIndexExitsParams, callback : (error : any, response : any, status : any) => void) : void;
-        exists(params : IndicesIndexExitsParams) : Promise<any>;
-        get(params : IndicesGetParams, callback : (error : any, response : any, status : any) => void) : void;
+        create(params : IndicesCreateParams, callback : (error : any, response : any, status : any) => void) : void;
+        exists(params : IndicesExistsParams) : Promise<any>;
+        exists(params : IndicesExistsParams, callback : (error : any, response : any, status : any) => void) : void;
         get(params : IndicesGetParams) : Promise<any>;
-        getAlias(params : IndicesGetAliasParams, callback : (error : any, response : any, status : any) => void) : void;
+        get(params : IndicesGetParams, callback : (error : any, response : any, status : any) => void) : void;
         getAlias(params : IndicesGetAliasParams) : Promise<any>;
-        putAlias(params : IndicesPutAliasParams, callback : (error : any, response : any, status : any) => void) : void;
+        getAlias(params : IndicesGetAliasParams, callback : (error : any, response : any, status : any) => void) : void;
         putAlias(params : IndicesPutAliasParams) : Promise<any>;
-        putMapping(params : IndicesPutMappingParams, callback : (error : any, response : any) => void) : void;
+        putAlias(params : IndicesPutAliasParams, callback : (error : any, response : any, status : any) => void) : void;
         putMapping(params : IndicesPutMappingParams) : Promise<any>;
-        putTemplate(params : IndicesPutTemplateParams, callback : (error : any, response : any) => void) : void;
+        putMapping(params : IndicesPutMappingParams, callback : (error : any, response : any) => void) : void;
         putTemplate(params : IndicesPutTemplateParams) : Promise<any>;
-        refresh(params : IndicesRefreshParams, callback : (error : any, response : any) => void) : void;
+        putTemplate(params : IndicesPutTemplateParams, callback : (error : any, response : any) => void) : void;
         refresh(params : IndicesRefreshParams) : Promise<any>;
+        refresh(params : IndicesRefreshParams, callback : (error : any, response : any) => void) : void;
     }
+
+    //---------------------------------
+    // Client
+    //---------------------------------
 
     export interface ClientParams {
         host : string;
@@ -87,12 +91,18 @@ declare module Elasticsearch {
         createNodeAgent? : Function;
     }
 
+    //---------------------------------
+    // Params
+    //---------------------------------
+
     export interface GenericParams {
-        requestTimeout? : number;
-        maxRetries? : number;
         method? : string;
         body? : string | any;
         ignore? : number | number[];
+        filterPath? : string | string[];
+
+        requestTimeout? : number;
+        maxRetries? : number;
     }
 
     export interface BulkParams extends GenericParams {
@@ -102,101 +112,6 @@ declare module Elasticsearch {
         type? : string;
         fields? : string | string[] | boolean;
         index? : string;
-    }
-
-    export interface IndicesGetParams extends GenericParams {
-        ignoreUnavailable? : boolean;
-        index : string | string[] | boolean;
-    }
-
-    export interface IndicesRefreshParams extends GenericParams {
-        force? : boolean;
-        ignoreUnavailable? : boolean;
-        index : string | string[] | boolean;
-    }
-
-    export interface IndicesDeleteParams extends GenericParams {
-        index : string | string[] | boolean;
-        timeout? : Date | number;
-        masterTimeout? : Date | number;
-    }
-
-    export interface IndicesCreateParams extends GenericParams {
-        index : string | string[] | boolean;
-        timeout? : Date | number;
-        masterTimeout? : Date | number;
-    }
-
-    export interface IndicesPutMappingParams extends GenericParams {
-        index: string | string[];
-        type: string;
-        timeout? : Date | number;
-        masterTimeout? : Date | number;
-        ignoreUnavailable? : boolean;
-        allowNoIndices? : boolean;
-        expandWildCards? : string;
-        updateAllTypes? : boolean;
-    }
-
-    export interface IndicesPutTemplateParams extends GenericParams {
-        order? : number;
-        create? : boolean;
-        timeout? : Date | number;
-        masterTimeout? : Date | number;
-        flatSettings? : boolean;
-        name : string;
-    }
-
-    export interface IndicesGetAliasParams extends GenericParams {
-        ignoreUnavailable? : boolean;
-        allowNoIndices? : boolean;
-        expandWildcards? : string;
-        local? : boolean;
-        index? : string | string[] | boolean;
-        name : string | string[] | boolean;
-    }
-
-    export interface IndicesPutAliasParams extends GenericParams {
-        index? : string | string[] | boolean;
-        name : string | string[] | boolean;
-    }
-
-    export interface CreateResponse extends GenericParams {
-        _index: string,
-        _type : string;
-        _id : string;
-        _version : number;
-        _shards : {
-            total: number,
-            successful: number,
-            failed: number
-        }
-        created: boolean;
-    }
-
-    export interface UpdateResponse extends GenericParams {
-        _index: string,
-        _type : string;
-        _id : string;
-        _version : number;
-        _shards : {
-            total: number,
-            successful: number,
-            failed: number
-        }
-    }
-
-    export interface DeleteResponse extends GenericParams {
-        _index: string,
-        _type : string;
-        _id : string;
-        _version : number;
-        _shards : {
-            total: number,
-            successful: number,
-            failed: number
-        },
-        found : boolean;
     }
 
     export interface GetParams extends GenericParams {
@@ -216,7 +131,7 @@ declare module Elasticsearch {
         versionType? : string;
     }
 
-    export interface GetResponse<T> extends GenericParams {
+    export interface GetResponse<T> {
         _type : string;
         _id : string;
         _version : number;
@@ -281,11 +196,6 @@ declare module Elasticsearch {
         type? : string;
     }
 
-    export interface IndicesIndexExitsParams extends GenericParams {
-        index : string | string[] | boolean;
-        ignoreUnavailable? : boolean;
-    }
-
     export interface PingParams extends GenericParams {
         requestTimeout? : number;
         hello? : string;
@@ -340,6 +250,126 @@ declare module Elasticsearch {
         body : string | any;
         index : string | string[] | boolean;
     }
+
+    //---------------------------------
+    // Response
+    //---------------------------------
+    
+    export interface GenericResponse {
+        took : number;
+        timed_out : boolean;
+        _shards : {
+            total: number,
+            successful: number,
+            failed: number
+        }
+    }
+
+    export interface CreateResponse extends GenericResponse {
+        _index: string,
+        _type : string;
+        _id : string;
+        _version : number;
+        created: boolean;
+    }
+
+    export interface UpdateResponse extends GenericResponse {
+        _index: string,
+        _type : string;
+        _id : string;
+        _version : number;
+    }
+
+    export interface DeleteResponse extends GenericResponse {
+        _index: string,
+        _type : string;
+        _id : string;
+        _version : number;
+        found : boolean;
+    }
+
+    export interface SearchResponseHit<T> {
+        _index: string,
+        _type : string;
+        _id : string;
+        _score : number;
+        _source : T
+    }
+
+    export interface SearchResponse<T> extends GenericResponse {
+        hits : {
+            total : number;
+            max_score : number;
+            hits : SearchResponseHit<T>[]
+        }
+    }
+
+    //---------------------------------
+    // Indices
+    //---------------------------------
+    
+    export interface IndicesGetParams extends GenericParams {
+        ignoreUnavailable? : boolean;
+        index : string | string[] | boolean;
+    }
+
+    export interface IndicesRefreshParams extends GenericParams {
+        force? : boolean;
+        ignoreUnavailable? : boolean;
+        index : string | string[] | boolean;
+    }
+
+    export interface IndicesDeleteParams extends GenericParams {
+        index : string | string[] | boolean;
+        timeout? : Date | number;
+        masterTimeout? : Date | number;
+    }
+
+    export interface IndicesCreateParams extends GenericParams {
+        index : string | string[] | boolean;
+        timeout? : Date | number;
+        masterTimeout? : Date | number;
+    }
+
+    export interface IndicesPutMappingParams extends GenericParams {
+        index: string | string[];
+        type: string;
+        timeout? : Date | number;
+        masterTimeout? : Date | number;
+        ignoreUnavailable? : boolean;
+        allowNoIndices? : boolean;
+        expandWildCards? : string;
+        updateAllTypes? : boolean;
+    }
+
+    export interface IndicesPutTemplateParams extends GenericParams {
+        order? : number;
+        create? : boolean;
+        timeout? : Date | number;
+        masterTimeout? : Date | number;
+        flatSettings? : boolean;
+        name : string;
+    }
+
+    export interface IndicesGetAliasParams extends GenericParams {
+        ignoreUnavailable? : boolean;
+        allowNoIndices? : boolean;
+        expandWildcards? : string;
+        local? : boolean;
+        index? : string | string[] | boolean;
+        name : string | string[] | boolean;
+    }
+
+    export interface IndicesPutAliasParams extends GenericParams {
+        index? : string | string[] | boolean;
+        name : string | string[] | boolean;
+    }
+
+    export interface IndicesExistsParams extends GenericParams {
+        index : string | string[] | boolean;
+        ignoreUnavailable? : boolean;
+    }
+
 }
 
 declare module "elasticsearch" {
