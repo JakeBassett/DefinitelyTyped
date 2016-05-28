@@ -10,8 +10,8 @@ declare module Elasticsearch {
 
         indices : Indices;
 
-        bulk(params : BulkDocumentsIndexParams) : Promise<any>;
-        bulk(params : BulkDocumentsIndexParams, callback : (error : any, response : any) => void) : void;
+        bulk(params : BulkParams) : Promise<any>;
+        bulk(params : BulkParams, callback : (error : any, response : any) => void) : void;
 
         index<T>(params : IndexParams<T>) : Promise<any>;
         index<T>(params : IndexParams<T>, callback : (error : any, response : any) => void) : void;
@@ -95,7 +95,7 @@ declare module Elasticsearch {
         ignore? : number | number[];
     }
 
-    export interface BulkDocumentsIndexParams extends GenericParams {
+    export interface BulkParams extends GenericParams {
         refresh? : boolean;
         routing? : string;
         timeout? : number | Date;
